@@ -363,7 +363,7 @@ export const MainPageList: React.FC = () => {
             value: PlayerMode.GOD_MODE,
             icon: <Security />,
             onSelect: () => {
-              handlePlayermodeToggle(PlayerMode.GOD_MODE);
+              console.log("Máš smůlu no, nejde nic")
             },
           },
         ],

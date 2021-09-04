@@ -9,15 +9,6 @@ end
 
 local noClipEnabled = false
 
-local function toggleGodMode(enabled)
-    if enabled then
-        sendPersistentAlert('godModeEnabled', 'info', 'nui_menu.page_main.player_mode.dialog_success_godmode', true)
-    else
-        clearPersistentAlert('godModeEnabled')
-    end
-    SetEntityInvincible(PlayerPedId(), enabled)
-end
-
 local freecamVeh = 0
 local function toggleFreecam(enabled)
     noClipEnabled = enabled
@@ -113,7 +104,7 @@ end)
 RegisterNetEvent('txAdmin:menu:playerModeChanged', function(mode)
     if mode == 'godmode' then
         toggleFreecam(false)
-        toggleGodMode(true)
+        toggleGodMode(false)
     elseif mode == 'noclip' then
         toggleGodMode(false)
         toggleFreecam(true)
