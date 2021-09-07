@@ -1,12 +1,27 @@
 ## TODO:
 - [x] changed onesync to be "on" by default
 - [x] noclip: update heading automatically + optimization
+- [x] tweak: error logging stuff
+- [x] feat: chart data rate limit
+- [x] feat(web/diagnostics): redacting cfx/steam/tebex keys
+- [x] feat: prevent noobs from messing setup/deploy opts
+- [x] tweak(core): removed space checking in fx paths
+- [x] fix(menu/spectate): fix for audio / texture loss when spectating a moving player 
+- [x] feat: allow two tx on same browser (closes #395)
+- [x] fix(client/state): fix not properly checking for netId existing, closes #443
+- [x] feat(menu/main): delete vehicle sub option
+- [x] fix(core): memory leak on server log 
+- [x] fix(nui): auth source for zap servers
+- [x] chore: updated a few dependencies
+> v4.5.0
+- [ ] review mem leak and auth src from zap
+
+
 
 
 warn auto dismiss 15s
 FreezeEntityPosition need to get the veh
 debugModeEnabled and isMenuDebug are redundant, should probably just use the one from shared
-https://i.imgur.com/PiqM8Nq.png
 
 
 Test:
@@ -14,12 +29,7 @@ adm-zip
 https://github.com/cthackers/adm-zip/compare/3d8bfc7a86da066131b2208a77148d2970e6234f...9a1ca460e18af17849542c6c136bd0c5861029f7
 
 Meh:
-windows/linux detection
-sessions in general
-nui snackbars
-oauth login
-socket.io
-fd3
+nui snackbars (last updated fucked some spacing/padding or something)
 
 
 When someone joins/leaves:
@@ -51,14 +61,22 @@ Novo log:
 - quando iniciar o tx pegar todos os logs da pasta e ir deletando os mais antigos até que o peso total da pasta seja menor que 2gb?
 - na página não sei como fazer scroll pra cima
 lembrar de pingar o squizer e falar que finalmente, assim como encerrar o issue e o PR
+### Log Stuff:
+https://www.npmjs.com/package/rotating-file-stream
+https://www.npmjs.com/package/file-stream-rotator
+https://www.npmjs.com/package/simple-node-logger
 
 
+Olhar links acima, caso nada ajude fazer:
+- os registros ficam lá na memória com um timestamp
+- página do server log via socket.io channels (tem que mudar live console tb) assim ele n precisa nunca ter o problema de fetch atualizações
+- no topo do log tem duas opções: real time e older log
+na opção older log, não há nenhum tipo de live ou socket.io, é só fazer paginação normal ou inline (ai os registros são inseridos por meio de uma div de página, e essa div pode ser deletada pra salvar memória)
+- quando clicar na paginação, ele faz um search no log passando "older than X" ou "newer than X", e limita XXX entradas
 
+os botões de prev e next podem ser `data-timestamp="xxx" onclick="seekOlder(this)"` e a função pega o this, le o parametro, depois remove o elemento na hora de inserir os novos dados
 
-Diagnostics page:
-On additionalArguments.replace(/licenseKey\s+(cfxk_\w{1,60}_\w{1,20}|\w{32})/gi, 'licenseKey [redacted cfx token]')
-same for steam api and tebex keys
-
+mover os logs do lua pra dentro do js, e parar de logar perm denied, só printar no console do child fxserver
 
 
 
@@ -77,6 +95,7 @@ nota:
 
 
 Small Stuff:
+- [ ] rever o espaço no path, procurar por "tabSpaceDisabledThingy" que vai marcar os lugares
 - [ ] menu: add debouncer for main options keydown
 - [ ] menu: noclip should set ped heading when exiting freecam
 - [ ] menu: visually disable options when no permission
@@ -180,13 +199,6 @@ maybe playerConnecting and then set permission by ID?
 https://github.com/citizenfx/fivem/commit/fd3fae946163e8af472b7f739aed6f29eae8105f
 
 
-### Log Stuff:
-https://www.npmjs.com/package/rotating-file-stream
-https://www.npmjs.com/package/file-stream-rotator
-https://www.npmjs.com/package/simple-node-logger
-https://www.npmjs.com/package/infinite-scroll
-
-
 ### Git clone using isomorphic-git
 https://github.com/isomorphic-git/isomorphic-git
 
@@ -202,6 +214,20 @@ for i = 0, max do
 end
 print(json.encode(hwids))
 ```
+
+### Spectating with routing bucket:
+Message from bubble:
+> the obvious 'approach' works well enough:
+> - get target routing bucket on server
+> - save old source
+> - teleport source player to in scope
+> - send event to source client
+> ------- client -------
+> - set focus pos and vel, less shit than 'xd teleport' and should trip server to cull anyway
+> - make self invisible/such
+> - wait for target player to exist
+> - use spectate native
+> and when stopping spectating do the opposite of that
 
 
 
