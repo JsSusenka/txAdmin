@@ -373,6 +373,7 @@ export const MainPageList: React.FC = () => {
               handlePlayermodeToggle(PlayerMode.NOCLIP);
             },
           },
+          /*
           {
             label: t("nui_menu.page_main.player_mode.item_godmode"),
             value: PlayerMode.GOD_MODE,
@@ -381,6 +382,7 @@ export const MainPageList: React.FC = () => {
               console.log("Máš smůlu no, nejde nic")
             },
           },
+          */
           {
             label: t("nui_menu.page_main.player_mode.item_none"),
             value: PlayerMode.DEFAULT,

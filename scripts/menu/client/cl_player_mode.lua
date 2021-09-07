@@ -104,13 +104,14 @@ end)
 RegisterNetEvent('txAdmin:menu:playerModeChanged', function(mode)
     if mode == 'godmode' then
         toggleFreecam(false)
-        toggleGodMode(false)
+        --toggleGodMode(false)
     elseif mode == 'noclip' then
-        toggleGodMode(false)
+        --toggleGodMode(false)
         toggleFreecam(true)
     elseif mode == 'none' then
         toggleFreecam(false)
-        toggleGodMode(false)
+        
+        --toggleGodMode(false)
     end
 end)
 
