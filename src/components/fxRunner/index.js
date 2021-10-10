@@ -2,12 +2,17 @@
 const modulename = 'FXRunner';
 const { spawn } = require('child_process');
 const path = require('path');
+const chalk = require('chalk');
 const sleep = require('util').promisify((a, f) => setTimeout(f, a));
 const { parseArgsStringToArgv } = require('string-argv');
 const StreamValues = require('stream-json/streamers/StreamValues');
 const { dir, log, logOk, logWarn, logError } = require('../../extras/console')(modulename);
 const helpers = require('../../extras/helpers');
 const OutputHandler = require('./outputHandler');
+
+const { customAlphabet } = require('nanoid');
+const dict51 = require('nanoid-dictionary/nolookalikes');
+const genMutex = customAlphabet(dict51, 5);
 
 
 //Helpers
@@ -47,7 +52,8 @@ module.exports = class FXRunner {
         this.history = [];
         this.fxServerPort = null;
         this.fxServerHost = null;
-        this.outputHandler = new OutputHandler(this.config.logPath, 10);
+        this.currentMutex = null;
+        this.outputHandler = new OutputHandler();
 
         //The setTimeout is not strictly necessary, but it's nice to have other errors in the top before fxserver starts.
         if (config.autostart && this.config.serverDataPath !== null && this.config.cfgPath !== null) {
@@ -81,6 +87,9 @@ module.exports = class FXRunner {
         if (typeof this.config.commandLine === 'string' && this.config.commandLine.length) {
             extraArgs = parseArgsStringToArgv(this.config.commandLine);
         }
+
+        //Generate new mutex
+        this.currentMutex = genMutex();
 
         // Prepare default args
         const cmdArgs = [
@@ -202,7 +211,7 @@ module.exports = class FXRunner {
             }
             pid = this.fxChild.pid.toString();
             logOk(`>> [${pid}] FXServer Started!`);
-            this.outputHandler.writeHeader();
+            globals.logger.fxserver.writeMarker('starting');
             this.history.push({
                 pid: pid,
                 timestamps: {
@@ -249,17 +258,17 @@ module.exports = class FXRunner {
         this.fxChild.stdin.on('data', () => {});
 
         this.fxChild.stdout.on('error', () => {});
-        this.fxChild.stdout.on('data', this.outputHandler.write.bind(this.outputHandler));
+        this.fxChild.stdout.on('data', this.outputHandler.write.bind(this.outputHandler, 'stdout', this.currentMutex));
 
         this.fxChild.stderr.on('error', () => {});
-        this.fxChild.stderr.on('data', this.outputHandler.writeError.bind(this.outputHandler));
+        this.fxChild.stderr.on('data', this.outputHandler.write.bind(this.outputHandler, 'stderr', this.currentMutex));
 
         const tracePipe = this.fxChild.stdio[3].pipe(StreamValues.withParser());
         tracePipe.on('error', (data) => {
             if (GlobalData.verbose) logWarn(`FD3 decode error: ${data.message}`);
             globals.databus.txStatsData.lastFD3Error = data.message;
         });
-        tracePipe.on('data', this.outputHandler.trace.bind(this.outputHandler));
+        tracePipe.on('data', this.outputHandler.trace.bind(this.outputHandler, this.currentMutex));
 
         return null;
     }//Final spawnServer()
@@ -399,7 +408,7 @@ module.exports = class FXRunner {
         if (this.fxChild === null) return false;
         try {
             const success = this.fxChild.stdin.write(command + '\n');
-            globals.webServer.webConsole.buffer(command, 'command');
+            globals.logger.fxserver.writeMarker('command', command);
             return success;
         } catch (error) {
             if (GlobalData.verbose) {
@@ -413,18 +422,35 @@ module.exports = class FXRunner {
 
     //================================================================
     /**
+     * Handles a live console command input
+     * @param {object} session
+     * @param {string} command
+     */
+    liveConsoleCmdHandler(session, command) {
+        log(`${session.auth.username} executing ` + chalk.inverse(' ' + command + ' '), 'SocketIO');
+        globals.logger.admin.write(`[${session.auth.username}] ${command}`);
+        globals.fxRunner.srvCmd(command);
+    }
+
+
+    //================================================================
+    /**
      * Pipe a string into FXServer's stdin (aka executes a cfx's command) and returns the stdout output.
+     * NOTE: used only in webroutes\fxserver\commands.js and webroutes\player\actions.js
+     * FIXME: deprecate this with a promise that resolves or rejects.
+     * we can create a promise with settimeout to reject, and create a function that resolves it
+     * and set this function in a map with the cmd id, and the resolve function as value
+     * the internal functions should fd3 {id, message?} and outputhandler do Map.get(id)(message)
      * @param {*} command
      * @param {*} bufferTime the size of the buffer in milliseconds
      * @returns {string} buffer
      */
-    async srvCmdBuffer(command, bufferTime) {
+    async srvCmdBuffer(command, bufferTime = 1500) {
         if (typeof command !== 'string') throw new Error('Expected String!');
         if (this.fxChild === null) return false;
-        bufferTime = (bufferTime !== undefined) ? bufferTime : 1500;
         this.outputHandler.cmdBuffer = '';
         this.outputHandler.enableCmdBuffer = true;
-        let result = this.srvCmd(command);
+        const result = this.srvCmd(command);
         if (!result) return false;
         await sleep(bufferTime);
         this.outputHandler.enableCmdBuffer = false;

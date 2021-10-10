@@ -10,11 +10,11 @@ const { dir, log, logOk, logWarn, logError } = require('../extras/console')(modu
  */
 module.exports = async function GetStatus(ctx) {
     const out = {
-        meta: prepareMetaData(),
+        status: prepareServerStatus(),
     };
     if (ctx.params.scope === 'web') {
         out.host = prepareHostData();
-        out.status = prepareServerStatus();
+        out.meta = prepareMetaData();
         out.players = preparePlayersData();
     }
     return ctx.send(out);
@@ -63,11 +63,9 @@ function prepareServerStatus() {
     }
     const processStatus = globals.fxRunner.getStatus();
 
-    let out = `Discord Bot Status: <span class="badge badge-${discordStatusClass}"> ${discordStatus} </span> <br>
+    return `Discord Bot Status: <span class="badge badge-${discordStatusClass}"> ${discordStatus} </span> <br>
         Server Status: <span class="badge badge-${monitorStatusClass}"> ${monitorStatus} </span> <br>
         Process Status: <span class="font-weight-light">${processStatus}</span>`;
-
-    return out;
 }
 
 

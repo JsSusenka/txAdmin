@@ -1,113 +1,194 @@
 ## TODO:
-- [x] changed onesync to be "on" by default
-- [x] noclip: update heading automatically + optimization
-- [x] tweak: error logging stuff
-- [x] feat: chart data rate limit
-- [x] feat(web/diagnostics): redacting cfx/steam/tebex keys
-- [x] feat: prevent noobs from messing setup/deploy opts
-- [x] tweak(core): removed space checking in fx paths
-- [x] fix(menu/spectate): fix for audio / texture loss when spectating a moving player 
-- [x] feat: allow two tx on same browser (closes #395)
-- [x] fix(client/state): fix not properly checking for netId existing, closes #443
-- [x] feat(menu/main): delete vehicle sub option
-- [x] fix(core): memory leak on server log 
-- [x] fix(nui): auth source for zap servers
-- [x] chore: updated a few dependencies
 > v4.5.0
-- [ ] review mem leak and auth src from zap
+- [x] FIXME: bunch of missing stuff here
+- [x] fix cause of death being always suicide (commit 9434d427)
+- [x] update material ui to v5
+- [x] fix(core): removed ansi color escape from srvCmdBuffer
+- [x] new server log with pagination and filter
+- [x] document new log thing
+- [x] clean this file
+- [x] update dev env to fxs/node16 
+- [x] update packages & test
+- [x] feat: database management page
+- [x] fix logging data on diagnostics page
+- [x] fix dashboard stats not working on iframe mode (closes #438)
+- [x] fix player modal for new server log
+
+Carryover:
+- [ ] remove the "NEW" tag from `header.html` and `masterActions.html`
+- [ ] new console log
+- [ ] change CitizenFX to Cfx.re as per branding consistency (ask the elements)
+- [ ] somehow still manage to fix the playerlist?
+
+
+Updated:
+@koa/router                             ^10.0.0   →    ^10.1.1
+adm-zip                                  ^0.5.5   →     ^0.5.6     test win/linux
+axios                                   ^0.21.1   →    ^0.21.4
+boxen                                    ^5.0.1   →     ^5.1.2
+chalk                                    ^4.1.1   →     ^4.1.2
+fs-extra                                 ^9.1.0   →    ^10.0.0
+@mui/material                            ^5.0.1   →     ^5.0.2
+koa                                     ^2.13.1   →    ^2.13.3
+koa-ratelimit                            ^5.0.0   →     ^5.0.1
+mysql2                                   ^2.2.5   →     ^2.3.0
+nanoid                                  ^3.1.23   →    ^3.1.28
+node-polyglot                            ^2.4.0   →     ^2.4.2
+notistack                         ^1.0.6-next.3   →     ^2.0.2
+openid-client                            ^4.7.4   →     ^4.9.0
+react-polyglot                           ^0.7.1   →     ^0.7.2
+rotating-file-stream                     ^2.1.5   →     ^2.1.6
+stream-json                              ^1.7.2   →     ^1.7.3
+systeminformation                        ^5.7.7   →     ^5.9.4
+@commitlint/cli                         ^12.1.4   →    ^13.2.0
+@commitlint/config-conventional         ^12.1.4   →    ^13.2.0
+@types/node                            ^16.7.10   →   ^16.10.2
+@types/react                           ^17.0.20   →   ^17.0.26
+eslint                                  ^7.30.0   →    ^7.32.0
+husky                                    ^6.0.0   →     ^7.0.2
+nodemon                                 ^2.0.10   →    ^2.0.13
+typescript                              ^4.3.5    →     ^4.4.3
+
+
+Not updated:
+dateformat      esm
+boxen           esm
+jose            apparently cjs is available, but does zap even plan on using it?
+lowdb           esm - complicated
+slash           esm
+windows-release esm
+
+https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+
+> User report: when admin use txadmin for first time, system ask him to change password, if he change it, all admins must restart to get txadmin working again
+
+> We could totally do like a "jump in time" feature for the log page.
+> A slider with 500 steps, and an array with 500 timestamps
+> this array can be done by dividing the serverLog.length to get the step, then a for loop to get the timestamps
+
+
+https://cdn.discordapp.com/attachments/589106731376836608/892124286360383488/unknown.png
+remover o \s?
 
 
 
+### Menu playerlist fix
+Server:
+- Will have it's own playerlist with {id, name, health, vehClass, coords}
+- Every 2.5s run through the playerlist updating {health, vehClass, coords}
+- On player Join/Leave:
+    - Add {id, name, 0, 0, 0} to playerlist or remove from playerlist
+    - TriggerClientEvent "updatePlayerlist" with [id, name] or [id, false] to all admins
+- On admin join/auth:
+    - Send event "setInitialPlaylist" with [[id, name]]
+- On gimmeDetailedPlayerlist event:
+    - check if admin
+    - get source coords
+    - for each player, get dist from source (cast to integer)
+    - reply with event setDetailedPlayerlist and payload [{id, health, vehClass, dist}]
+
+Client:
+- Updates playerlist on setInitialPlaylist/updatePlayerlist/setDetailedPlayerlist
+- On player tab open: getDetailedPlayerlist()
+- Every 5 seconds when player tab is opened: getDetailedPlayerlist()
+- Maybe: when the player tab is mounted, add a message that says "updating playerlist" and hide after first detailed playerlist arrives
+
+NOTE: delay based on function https://www.desmos.com/calculator/ls0lfokshc
+```lua
+local minDelay = 2000
+local maxDelay = 5000
+local maxPlayersDelayCeil = 150 --at this number, the delay won't increase more
+
+local hDiff = maxDelay - minDelay
+local calcDelay = (hDiff/maxPlayersDelayCeil) * playerCount + minDelay
+local delay = math.min(calcDelay, maxDelay)
+```
+
+NOTE: send everything as array? 
+[1234,"namenamenamename"]
+{"i":1234,"n":"namenamenamename"}
+[1234,200,1,9999]
+{"i":1234,"h":200,"v":1,"d":9999}
+
+FIXME: update min fxserver version to the one where bubble exposed the GetVehClass to the server
+
+TODO: For now we can do this way, but probably better to set a linear function to get the interval from 2.5s to 5s (both client and server) based on the number of players
+
+
+
+### txAdmin API/integrations:
+- ban/warn/whitelist + revoke action: probably exports with GetInvokingResource() for perms 
+- get player info (history, playtime, joindate, etc): state bags
+- events: keep the way it is
+> Note: confirm with bubble
+> Don't forget to add a integrations doc page + to the readme
+> for menu and internal stuff to use token-based rest api: ok, just make sure to use the webpipe proxy
+> for resource permissions, use resource.* ace thing, which also works for exports
+
+> for ban things, bubble wants a generic thing that is not just for txadmin, so any resource could implement it
+> so its not exports.txadmin.xxxx, but some other generic thing that bubble would need to expose
+
+> querying user info: in-server monitor resource should set specific state keys (non-replicated), which get properly specified so other resources can also populate any 'generic' fields. thinking of kubernetes-style namespaces as java-style namespaces are disgusting (playerdata.cfx.re/firstjoin or so)
+> bans: some sort of generic event/provide-stuff api. generic event spec format is needed for a lot of things, i don't want 'xd another api no other resource uses', i just want all resources from X on to do things proper event-y way
+> --bubble
+https://docs.fivem.net/docs/scripting-manual/networking/state-bags/
+
+ps.: need to also include the external events reporting thing
+
+
+### Admin ACE sync:
+On server start, or admins permission change:
+- write a `txData/<profile>/txAcePerms.cfg` with:
+    - remove_ace/remove_principal to wipe old permissions (would need something like `remove_ace identifier.xxx:xx txadmin.* any`)
+    - add_ace/add_principal for each admin
+- stdin> `exec xxx.cfg; txaBroadcast xxxxx`
+
+- We should be able to get rid of our menu state management, mainly the part that sends to lua what are the admin ids when something changes
+To check of admin perm, just do `IsPlayerAceAllowed(src, 'txadmin.xxxxxx')`
+> Don't use, but I'll leave it saved here: https://github.com/citizenfx/fivem/commit/fd3fae946163e8af472b7f739aed6f29eae8105f
+
+
+### Admin gun
+An "admin gun" where you point a gun to a player and when you point it to a player it shows this player's info, and when you "shoot it" it opens that player's modal.
+If not a custom gun model, just use the point animation and make sure we have a crosshair
+
+
+### recipe engine todo:
+- checksum for downloaded files
+- remove_path accept array?
+- every X download_github wait some time - maybe check if ref or not, to be smarter
+- https://github.com/isomorphic-git/isomorphic-git
+- easy recipe tester
+- fully automated deploy process via CLI. You just set the recipe file path, as well as the required variables, and you can get your server running without any user interaction .
+
+### Todozinhos:
+pagina de adicionar admin precisa depois do modal, mostrar mais info:
+username, senha, potencialmente link, instruções de login
 
 warn auto dismiss 15s
 FreezeEntityPosition need to get the veh
 debugModeEnabled and isMenuDebug are redundant, should probably just use the one from shared
 
 
-Test:
-adm-zip
-https://github.com/cthackers/adm-zip/compare/3d8bfc7a86da066131b2208a77148d2970e6234f...9a1ca460e18af17849542c6c136bd0c5861029f7
-
-Meh:
-nui snackbars (last updated fucked some spacing/padding or something)
-
-
-When someone joins/leaves:
-- sv_playerlist sends {id, false} or {id, name, license} via event for the connected admins
-- client atualiza sua playerlist interna
-
-
-Client every 5 seconds:
-- if isMenuVisible TriggerServerEvent("gimmeDetailedPlayerlist")
-
-Server on gimmeDetailedPlayerlist
-- get requester's coords
-
-
-pagina de adicionar admin precisa depois do modal, mostrar mais info:
-username, senha, potencialmente link, instruções de login
 
 
 
-
-Novo log:
-- manter array de objetos em memória
-- limitar array para 16k elementos, isso deve dar 1h em servidores muito grandes (266 eventos por minuto)
-- o identificador nos objetos fica o nome e id do jogador junto do mutex do server
-- interface quando receber, transforma o username em clicável
-- server mantem em memória todos os ids de todos os mutex desde que o tx iniciou playerIds = {"mutex": {"id": [...]}} 
-- quando chegar, já coloca em um buffer que dumpa pra logfile com nome serverlog_timestamp.log, totalmente human readable
-- quando player entrar, jogar no logfile "player joined {mutex|id} Nome [...identifiers], assim da pra dar um ctrl+f
-- quando iniciar o tx pegar todos os logs da pasta e ir deletando os mais antigos até que o peso total da pasta seja menor que 2gb?
-- na página não sei como fazer scroll pra cima
-lembrar de pingar o squizer e falar que finalmente, assim como encerrar o issue e o PR
-### Log Stuff:
-https://www.npmjs.com/package/rotating-file-stream
-https://www.npmjs.com/package/file-stream-rotator
-https://www.npmjs.com/package/simple-node-logger
-
-
-Olhar links acima, caso nada ajude fazer:
-- os registros ficam lá na memória com um timestamp
-- página do server log via socket.io channels (tem que mudar live console tb) assim ele n precisa nunca ter o problema de fetch atualizações
-- no topo do log tem duas opções: real time e older log
-na opção older log, não há nenhum tipo de live ou socket.io, é só fazer paginação normal ou inline (ai os registros são inseridos por meio de uma div de página, e essa div pode ser deletada pra salvar memória)
-- quando clicar na paginação, ele faz um search no log passando "older than X" ou "newer than X", e limita XXX entradas
-
-os botões de prev e next podem ser `data-timestamp="xxx" onclick="seekOlder(this)"` e a função pega o this, le o parametro, depois remove o elemento na hora de inserir os novos dados
-
-mover os logs do lua pra dentro do js, e parar de logar perm denied, só printar no console do child fxserver
-
-
-
-recipe engine todo:
-- checksum for downloaded files
-- remove_path accept array?
-- every X download_github wait some time - maybe check if ref or not, to be smarter
-
-
-
-
-nota:
+=======================================
+### old stuff:::
 - precisamos garantir que uma sessão criada via NUI seja só usada com nui
 - criar um novo token, mudar no primeiro tick
 - desabilitar master actions pra quando for NUI
 
-
 Small Stuff:
-- [ ] rever o espaço no path, procurar por "tabSpaceDisabledThingy" que vai marcar os lugares
+- [ ] try json stream on lowdb
 - [ ] menu: add debouncer for main options keydown
-- [ ] menu: noclip should set ped heading when exiting freecam
-- [ ] menu: visually disable options when no permission
 - [ ] menu: fix heal self/server behavior inconsistent with player mode and teleport
-- [ ] menu: add noclip key binding
 - [ ] block execution if GetCurrentResourceName() != 'monitor'
-- [ ] player modal should show if the user is banned/whitelisted or not, and an easy way to revoke it
+- [ ] player modal must show if the user is banned/whitelisted or not, and an easy way to revoke it
 - [ ] check EOL and warn user - new Date('2021-09-14T07:38:51+00:00').getTime()
 - [ ] on recipe import, check if indexOf('<html>')
 - [ ] enable squirrelly file caching via `renderFile()`
-- [ ] srvCmdBuffer needs to strip the color escape characters
-- [ ] logger: `Unrecognized event: playerJoining` -- we are using playerConnecting but should probably change that
 - [ ] make the commands (kick, warn, etc) return success or danger, then edit DialogActionView.tsx
     - can be done by adding a randid to the command, then making the cmdBuffer match for `<id><OK|NOK>` 
 
@@ -115,7 +196,6 @@ Small Stuff:
 - [ ] if isZapHosting && forceInterface, add `set sv_listingIPOverride "xxx.xxx.xxx.xxx"` in deployer
 - [ ] maybe remove the sv_maxclients enforcement in the cfg file
 - [ ] fix the interface enforcement without port being set as zap server?
-- [ ] consolidate the log pages
 
 
 > ASAP!:
@@ -144,7 +224,11 @@ Small Stuff:
 - [ ] add stats enc?
 - [ ] apply the new action log html to the modal
 - [ ] add `<fivem://connect/xxxxx>` to `/status` by getting `web_baseUrl` maybe from the heartbeat
-- [ ] add ban server-side ban cache (last 500 bans?), updated on every ban change 
+- [ ] add ban/whitelist fxs-side cache (last 1000 bans + 1000 whitelists), automatically updated
+    - before starting the server, get last 1k bans/whitelists and write to a json file
+    - quen monitor starts, it will read the file and load to memory
+    - start sending the affected identifiers for the events `txAdmin:events:*` whitelisted, banned, and create a new for action revoked (type, action id).
+    - monitor listens to the event, and when it happens either add it to the cache, or erase from cache
 - [ ] add a commend system?
 - [ ] add stopwatch (or something) to the db functions and print on `/diagnostics`
 
@@ -155,20 +239,6 @@ Small Stuff:
 - [ ] show error when saving discord settings with wrong token
 - [ ] break down `playerController` into separate files even more
 - [ ] rename `playerController` to `playerManager`?
-
-=======================================
-
-## Database Management page
-- erase all whitelists
-- erase all bans
-- erase all warnings
-- Prune Database:
-    All options will be select boxes containing 3 options: none, conservative, aggressive
-    - Players (without notes) innactive for xxx days: 60, 30
-    - Warns older than xx days: 30, 7
-    - Bans: revoked, revoked or expired
-Add a note that to erase the entire database, the user should delete the `playersDB.json` (full path) file and restart txAdmin.
-Pre calculate all counts
 
 =======================================
 
@@ -189,32 +259,6 @@ We could wait for the server to finish loading, as well as print in the interfac
 https://github.com/citizenfx/fivem/blob/649dac8e9c9702cc3e293f8b6a48105a9378b3f5/code/components/citizen-server-impl/src/ResourceStreamComponent.cpp#L435
 
 
-### State bags?
-https://docs.fivem.net/docs/scripting-manual/networking/state-bags/
-
-
-### the ace permissions editor thing
-https://discordapp.com/channels/192358910387159041/450373719974477835/724266730024861717
-maybe playerConnecting and then set permission by ID?
-https://github.com/citizenfx/fivem/commit/fd3fae946163e8af472b7f739aed6f29eae8105f
-
-
-### Git clone using isomorphic-git
-https://github.com/isomorphic-git/isomorphic-git
-
-
-### HWID tokens
-https://github.com/citizenfx/fivem/commit/f52b4b994a316e1f89423b97c92d73b624bea731
-```lua
-local pid = 1
-local hwids = {}
-local max = GetNumPlayerTokens(pid)
-for i = 0, max do
-    hwids[i+1] = GetPlayerToken(pid, i)
-end
-print(json.encode(hwids))
-```
-
 ### Spectating with routing bucket:
 Message from bubble:
 > the obvious 'approach' works well enough:
@@ -234,6 +278,8 @@ Message from bubble:
 =======================================
 
 ## Bot Commands:
+https://www.npmjs.com/package/eris - avarianknight recommended
+
 DONE:
 /addwl <wl req id>
 /addwl <license>
@@ -374,4 +420,9 @@ npx eslint ./src/** --fix
 console.log('hanging the thread for 60s');
 Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 60 * 1000);
 console.log('done');
+
+# check chart
+cdt
+cd web/public/
+curl -o svMain.json http://localhost:40120/chartData/svMain
 ```
