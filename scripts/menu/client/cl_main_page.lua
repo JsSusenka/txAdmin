@@ -134,6 +134,11 @@ RegisterNUICallback('fixVehicle', function(_, cb)
     cb({})
 end)
 
+
+RegisterCommand('txAdmin:menu:fixvehicle', function()
+    TriggerServerEvent('txAdmin:menu:fixVehicle')
+end)
+
 --[[ EVENT HANDLERS ]]
 
 RegisterNetEvent('txAdmin:menu:fixVehicle', function()

@@ -78,6 +78,7 @@ RegisterNetEvent('txcl:setAdmin', function(username, perms, rejectReason)
     RegisterKeyMapping('txAdmin:menu:noClipToggle', 'Menu: Toggle NoClip', 'keyboard', '')
     RegisterKeyMapping('txAdmin:menu:togglePlayerIDs', 'Menu: Toggle Player IDs', 'KEYBOARD', '')
     RegisterKeyMapping('txAdmin:menu:endSpectate', 'Menu: Exit spectate mode', 'keyboard', 'BACK')
+    RegisterKeyMapping('txAdmin:menu:fixvehicle', 'Menu: Fix current vehicle', 'keyboard', 'HOME')
   else
     print("^3[AUTH] rejected (" .. tostring(rejectReason) ..")")
     menuIsAccessible = false

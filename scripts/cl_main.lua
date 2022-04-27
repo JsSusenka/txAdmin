@@ -90,6 +90,7 @@ CreateThread(function()
     --Keybinds
     TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:noClipToggle')
     TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:endSpectate')
+    TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:fixvehicle')
     TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:openPlayersPage')
     TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:togglePlayerIDs')
 
