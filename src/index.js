@@ -39,7 +39,7 @@ if (process.env.APP_ENV !== 'webpack' && txAdmin1337Convar !== 'IKnowWhatImDoing
     logError('Looks like you don\'t know what you are doing.');
     logDie('Please use the compiled release from GitHub or the version that comes with the latest FXServer.');
 }
-const isAdvancedUser = (process.env.APP_ENV !== 'webpack' && txAdmin1337Convar == 'IKnowWhatImDoing');
+const isDeveloperMode = (process.env.APP_ENV !== 'webpack' && txAdmin1337Convar == 'IKnowWhatImDoing');
 
 //Get OSType
 const osTypeVar = os.type();
@@ -56,12 +56,17 @@ if (osTypeVar == 'Windows_NT') {
 const resourceName = GetCurrentResourceName();
 
 //Getting fxserver version
+//4380 = GetVehicleType was exposed server-side
+//4548 = more or less when node v16 was added
+//4574 = add missing PRINT_STRUCTURED_TRACE declaration
+//4574 = add resource field to PRINT_STRUCTURED_TRACE
+const minFXServerVersion = 4574;
 const fxServerVersion = getBuild(GetConvar('version', 'false'));
 if (!fxServerVersion) {
-    logDie('This version of FXServer is NOT compatible with txAdmin v2. Please update it to build 2524 or above. (version convar not set or in the wrong format)');
+    logDie(`This version of FXServer is NOT compatible with txAdmin. Please update it to build ${minFXServerVersion} or above. (version convar not set or in the wrong format)`);
 }
-if (fxServerVersion < 2524) {
-    logDie('This version of FXServer is too outdated and NOT compatible with txAdmin, please update.');
+if (fxServerVersion < minFXServerVersion) {
+    logDie(`This version of FXServer is too outdated and NOT compatible with txAdmin, please update to artifact/build ${minFXServerVersion} or newer!`);
 }
 
 //Getting txAdmin version
@@ -168,7 +173,7 @@ if (fs.existsSync(zapCfgFile)) {
 
         loopbackInterfaces.push(forceInterface);
 
-        if (!isAdvancedUser) fs.unlinkSync(zapCfgFile);
+        if (!isDeveloperMode) fs.unlinkSync(zapCfgFile);
     } catch (error) {
         logDie(`Failed to load with ZAP-Hosting configuration error: ${error.message}`);
     }
@@ -199,8 +204,8 @@ if (verbose) dir({isZapHosting, forceInterface, forceFXServerPort, txAdminPort, 
 //NOTE: Only valid if its being very actively maintained.
 //          Use 30d for patch 0, or 45~60d otherwise
 //      Objective is to update every 2~3 weeks, always on monday ~15:00
-const txVerBBLastUpdate = 1633370000;
-const txVerBBDelta = 21 + ((isZapHosting) ? 10 : 0);
+const txVerBBLastUpdate = 1650299999;
+const txVerBBDelta = 23 + ((isZapHosting) ? 10 : 0);
 const txAdminVersionBestBy = txVerBBLastUpdate + (txVerBBDelta * 86400);
 // dir({
 //     updateDelta: txVerBBDelta,
@@ -231,7 +236,7 @@ if (!serverProfile.length) {
 const noLookAlikesAlphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 GlobalData = {
     //Env
-    isAdvancedUser,
+    isDeveloperMode,
     osType,
     resourceName,
     fxServerVersion,

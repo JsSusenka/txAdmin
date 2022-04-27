@@ -25,12 +25,12 @@ module.exports = async function SetupGet(ctx) {
     const globalConfig = globals.configVault.getScopedStructure('global');
     const renderData = {
         headerTitle: 'Setup',
-        serverName: globalConfig.serverName || '',
         isReset: (globalConfig.serverName !== null),
         deployerEngineVersion: engineVersion,
         serverProfile: globals.info.serverProfile,
         txDataPath: GlobalData.dataPath,
         isZapHosting: GlobalData.isZapHosting,
+        windowsBatPath: null,
     };
 
     if (GlobalData.osType == 'windows') {

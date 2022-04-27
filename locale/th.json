@@ -4,27 +4,27 @@
         "humanizer_language": "th"
     },
     "restarter": {
-        "start_timeout": "failed to start in time",
+        "start_timeout": "ไม่สามารถเริ่มได้ทันเวลาที่กำหนดไว้",
         "crash_detected": "ตรวจพบข้อผิดพลาด",
-        "hang_detected": "hang detected",
-        "partial_hang_warn": "Due to a partial hang, this server will restart in 1 minute. Please disconnect now.",
-        "partial_hang_warn_discord": "Due to a partial hang, **%{servername}** will restart in 1 minute.",
+        "hang_detected": "ตรวจพบอาการแฮงค์",
+        "partial_hang_warn": "เนื่องจากพบอาการแฮงค์ในบางส่วน เซิร์ฟเวอร์นี้จะรีสตาร์ทใน 1 นาที กรุณายกเลิกการเชื่อมต่อในขณะนี้",
+        "partial_hang_warn_discord": "เนื่องจากพบอาการแฮงค์ในบางส่วน, **%{servername}** จะรีสตาร์ทใน 1 นาที",
         "schedule_reason": "รีสตาร์ทตามกำหนดเวลา %{time}",
         "schedule_warn": "เซิร์ฟเวอร์ถูกกำหนดเวลาให้รีสตาร์ทใน %{smart_count} นาที โปรดยกเลิกการเชื่อมต่อทันที |||| เซิร์ฟเวอร์ถูกกำหนดเวลาให้รีสตาร์ทใน %{smart_count} นาที.",
         "schedule_warn_discord": "**%{servername}** มีกำหนดการจะรีสตาร์ทใน %{smart_count} นาที |||| **%{servername}** มีกำหนดการจะรีสตาร์ทใน %{smart_count} นาที"
     },
     "ban_messages": {
-        "kick_temporary": "(%{author}) You have been banned from this server for \"%{reason}\". Your ban will expire in: %{expiration}.",
-        "kick_permanent": "(%{author}) You have been permanently banned from this server for \"%{reason}\".",
-        "reject_temporary": "You have been banned from this server.\nYour ban will expire in: %{expiration}.\nBan ID: %{id}.\nBan Reason: %{reason}.\nBanned by: %{author}.",
-        "reject_permanent": "You have been permanently banned from this server.\nBan ID: %{id}.\nBan Reason: %{reason}.\nBanned by: %{author}."
+        "kick_temporary": "(%{author}) คุณถูกแบนจากเซิร์ฟเวอร์นี้เพราะ \"%{reason}\" การแบนของคุณจะหมดอายุใน: %{expiration}.",
+        "kick_permanent": "(%{author}) คุณถูกแบนจากเซิร์ฟเวอร์นี้อย่างถาวรเพราะ \"%{reason}\"",
+        "reject_temporary": "คุณถูกแบนจากเซิร์ฟเวอร์นี้\nการแบนของคุณจะหมดอายุใน: %{expiration}.\nแบนไอดี: %{id}\nเหตุผลในการแบน: %{reason}\nแบนโดย: %{author}",
+        "reject_permanent": "คุณถูกแบนจากเซิร์ฟเวอร์นี้อย่างถาวร\nแบนไอดี: %{id}.\nเหตุผลในการแบน: %{reason}\nแบนโดย: %{author}"
     },
     "server_actions": {
-        "restarting": "เซิร์ฟเวอร์รีสตาร์ท (%{reason}).",
-        "restarting_discord": "**%{servername}** กำลังรีสตาร์ท (%{reason}).",
-        "stopping": "เซิร์ฟเวอร์หยุดทำงาน (%{reason}).",
-        "stopping_discord": "**%{servername}** กำลังหยุดทำงาน (%{reason}).",
-        "spawning_discord": "**%{servername}** กำลังเริ่มต้นระบบ."
+        "restarting": "เซิร์ฟเวอร์รีสตาร์ท (%{reason})",
+        "restarting_discord": "**%{servername}** กำลังรีสตาร์ท (%{reason})",
+        "stopping": "เซิร์ฟเวอร์หยุดทำงาน (%{reason})",
+        "stopping_discord": "**%{servername}** กำลังหยุดทำงาน (%{reason})",
+        "spawning_discord": "**%{servername}** กำลังเริ่มต้นระบบ"
     },
     "discord": {
         "status_online": "**%{servername}** ปัจจุบันคือ **Online**!",
@@ -33,6 +33,258 @@
     "nui_warning": {
         "title": "WARNING",
         "warned_by": "Warned by:",
-        "instruction": "Hold [SPACE] for 10 seconds to dismiss this message."
+        "instruction": "กด [SPACE] ค้าวไว้เป็นเวลา 10 วินาทีเพื่อปิดข้อความนี้"
+    },
+    "nui_menu": {
+        "misc": {
+            "help_message": "เปิดใช้งานเมนู txAdmin แล้ว พิมพ์ /tx เพื่อเปิดมันขึ้น\nคุณยังสามารถกำหนดค่าปุ่ม keybind ได้ที่ [Game Settings > Key Bindings > FiveM > Menu: Open Main Page]",
+            "menu_not_allowed": "ตัวตนของคุณไม่ตรงกับที่ผู้ดูแลระบบลงทะเบียนใน txAdmin\nหากคุณลงทะเบียนใน txAdmin แล้ว ให้ไปที่ Admin Manager และตรวจสอบให้แน่ใจว่าได้บันทึกตัวระบุของคุณแล้ว",
+            "no_perms": "คุณไม่ได้รับสิทธิ์นี้",
+            "unknown_error": "เกิดข้อผิดพลาดที่ไม่รู้จัก",
+            "not_enabled": "ไม่ได้เปิดใช้งานเมนู txAdmin คุณสามารถเปิดใช้งานได้ในหน้า การตั้งค่าของ txAdmin",
+            "announcement_title": "ประกาศจากเซิร์ฟเวอร์โดย %{author}:",
+            "dialog_empty_input": "คุณไม่สามารถป้อนข้อมูลว่างได้"
+        },
+        "frozen": {
+            "froze_player": "คุณได้ถูกระงับผู้เล่นแล้ว",
+            "unfroze_player": "คุณได้ยกเลิกการถูกระงับผู้เล่นแล้ว",
+            "was_frozen": "คุณถูกระงับโดยผู้ดูแลเซิร์ฟเวอร์"
+        },
+        "common": {
+            "cancel": "ยกเลิก",
+            "submit": "ยอมรับ",
+            "error": "เกิดข้อผิดพลาด",
+            "copied": "คัดลอกไปยังคลิปบอร์ดแล้ว"
+        },
+        "page_main": {
+            "tooltips": {
+                "tooltip_1": "ใช้ปุ่ม %{key} เพื่อสลับหน้าและเป็นปุ่มลูกศรเพื่อนำทางรายการเมนู",
+                "tooltip_2": "รายการเมนูบางรายการมีตัวเลือกย่อยซึ่งสามารถเลือกได้โดยใช้ปุ่มลูกศรซ้ายและขวา"
+            },
+            "player_mode": {
+                "title": "โหมดผู้เล่น",
+                "noclip": {
+                    "title": "โหมดอิสระ",
+                    "label": "บินไปรอบๆได้",
+                    "success": "เปิดใช้งานโหมดอิสระ"
+                },
+                "godmode": {
+                    "title": "โหมดพระเจ้า",
+                    "label": "อยู่ยงคงกระพัน",
+                    "success": "เปิดใช้โหมดพระเจ้า"
+                },
+                "normal": {
+                    "title": "โหมดธรรมดา",
+                    "label": "โหมดเริ่มต้น",
+                    "success": "กลับไปสู่โหมดเริ่มต้นเป็นผู้เล่น"
+                }
+            },
+            "teleport": {
+                "title": "เทเลพอร์ต",
+                "generic_success": "ส่งคุณเข้าไปในรูหนอนแล้วแล้ว",
+                "waypoint": {
+                    "title": "จุดมาร์ค",
+                    "label": "ไปยังจุดที่ทำเครื่องหมายไว้",
+                    "error": "คุณยังไม่ได้ทำจุดมาร์คไว้"
+                },
+                "coords": {
+                    "title": "พิกัด",
+                    "label": "ไปยังพิกัดจะระบุ",
+                    "dialog_title": "เทเลพอร์ต",
+                    "dialog_desc": "ระบุพิกัดในรูปแบบ x, y, z เพื่อผ่านโดยใช้รูหนอน",
+                    "dialog_error": "พิกัดไม่ถูกต้อง ต้องอยู่ในรูปแบบ: 111, 222, 33"
+                },
+                "back": {
+                    "title": "กลับ",
+                    "label": "กลับไปยังตำแหน่งล่าสุด",
+                    "error": "คุณไม่มีสถานที่ล่าสุดที่จะกลับไป"
+                },
+                "copy": {
+                    "title": "คัดลอกพิกัด",
+                    "label": "คัดลอกพิกัดไปยังคลิปบอร์ด"
+                }
+            },
+            "vehicle": {
+                "title": "ยานพาหนะ",
+                "onesync_error": "ตัวเลือกนี้กำหนดให้ต้องเปิด OneSync เพื่อสำหรับการจัดการเอนทิตีในเซิร์ฟเวอร์",
+                "not_in_veh_error": "คุณไม่ได้อยู่ในยานพาหนะในขณะนี้",
+                "spawn": {
+                    "title": "Spawn",
+                    "label": "สร้างยานพาหนะตามชื่อโมเดล",
+                    "dialog_title": "สร้างยานพาหนะ",
+                    "dialog_desc": "ป้อนชื่อโมเดลของยานพาหนะที่คุณต้องการสร้างขึ้นมา",
+                    "dialog_success": "สร้างยานพาหนะขึ้นมาแล้ว",
+                    "dialog_error": "โมเดลยานพาหนะชื่อ '%{modelName}' ไม่ได้มีอยู่",
+                    "dialog_info": "พยายามที่จะสร้าง %{modelName}"
+                },
+                "fix": {
+                    "title": "ซ่อม",
+                    "label": "ซ่อมยานพาหนะปัจจุบัน",
+                    "success": "ซ่อมยานพาหนะแล้ว"
+                },
+                "delete": {
+                    "title": "ลบ",
+                    "label": "ลบยานพาหนะปัจจุบัน",
+                    "success": "ลบยานพาหนะแล้ว"
+                }
+            },
+            "heal": {
+                "title": "รักษา",
+                "myself": {
+                    "title": "ตัวเอง",
+                    "label": "ฟื้นฟูสุขภาพของคุณ",
+                    "success_0": "หายดีแล้ว",
+                    "success_1": "คุณน่าจะรู้สึกดีขึ้นแล้วในขณะนี้",
+                    "success_2": "ฟื้นคืนชีพเต็มพิกัด",
+                    "success_3": "รักษาอาการเจ็บแล้ว"
+                },
+                "everyone": {
+                    "title": "ทุกคน",
+                    "label": "รักษาและชุบชีวิตผู้เล่นทุกคน",
+                    "success": "รักษาและชุบชีวิตผู้เล่นทุกคนแล้ว"
+                }
+            },
+            "announcement": {
+                "title": "ส่งประกาศ",
+                "label": "ส่งประกาศถึงผู้เล่นออนไลน์ทุกคนแล้ว",
+                "dialog_desc": "ส่งประกาศถึงผู้เล่นออนไลน์ทุกคนแล้ว",
+                "dialog_placeholder": "ข้อความประกาศของคุณ...",
+                "dialog_success": "ส่งข้อความประกาศแล้ว"
+            },
+            "clear_area": {
+                "title": "รีเซ็ตพื้นที่โลก",
+                "label": "รีเซ็ตพื้นที่โลกให้กลับไปเป็นสถานะเริ่มต้น",
+                "dialog_desc": "โปรดป้อนรัศมีที่คุณต้องการรีเซ็ตเอนทิตีในช่วง (0-300) สิ่งนี้จะไม่ล้างเอนทิตีที่เกิดจากฝั่งเซิร์ฟเวอร์ได้",
+                "dialog_success": "ลง้าพื้นที่ในรัศมีระยะ %{radius}เมตร แล้ว",
+                "dialog_error": "ป้อนข้อมูลรัศมีไม่ถูกต้อง ลองอีกครั้ง"
+            },
+            "player_ids": {
+                "title": "สลับไอดีผู้เล่น",
+                "label": "สลับการแสดงไอดีผู้เล่น (และข้อมูลอื่นๆ) บริเวณส่วนเหนือหัวของผู้เล่นในระยะใกล้เคียงทั้งหมด",
+                "alert_show": "กำลังแสดงไอดีของผู้เล่นใกล้เคียง",
+                "alert_hide": "กำลังซ่อนไอดีของผู้เล่นใกล้เคียง"
+            }
+        },
+        "page_players": {
+            "misc": {
+                "online_players": "ผู้เล่นที่ออนไลน์",
+                "players": "ผู้เล่น",
+                "search": "ค้นหา",
+                "zero_players": "ไม่พบผู้เล่น"
+            },
+            "sort": {
+                "label": "กรอกผู้เล่นจาก",
+                "distance": "ระยะทาง",
+                "id": "ไอดี",
+                "joined_first": "เข้าร่วมก่อน",
+                "joined_last": "เข้าร่วมล่าสุด",
+                "closest": "ใกล้ที่สุด",
+                "farthest": "ไกลที่สุด"
+            },
+            "card": {
+                "health": "สุขภาพ %{percentHealth}%"
+            }
+        },
+        "player_modal": {
+            "misc": {
+                "error": "เกิดข้อผิดพลาดขณะดึงรายละเอียดผู้ใช้รายนี้ ข้อผิดพลาดแสดงอยู่ด้านล่าง:",
+                "target_not_found": "ไม่สามารถหาผู้เล่นที่ออนไลน์จากไอดีหรือชื่อผู้ใช้จาก %{target}"
+            },
+            "tabs": {
+                "actions": "การกระทำ",
+                "info": "ข้อมูล",
+                "ids": "ไอดี",
+                "history": "ประวัติ",
+                "ban": "แบน"
+            },
+            "actions": {
+                "title": "การกระทำของผู้เล่น",
+                "command_sent": "ส่งคำสั่งแล้ว",
+                "moderation": {
+                    "title": "จัดการ",
+                    "options": {
+                        "dm": "DM",
+                        "warn": "เตือน",
+                        "kick": "เตะ",
+                        "set_admin": "มอบผู้ดูแลระบบ"
+                    },
+                    "dm_dialog": {
+                        "title": "Direct Message",
+                        "description": "เหตุผลที่จะส่งข้อความไปหาผู้เล่นรายนี้โดยตรง",
+                        "placeholder": "เหตุผล...",
+                        "success": "ส่ง DM ของคุณแล้ว"
+                    },
+                    "warn_dialog": {
+                        "title": "เตือน",
+                        "description": "เหตุผลที่จะส่งข้อความเตือนไปหาผู้เล่นรายนี้",
+                        "placeholder": "เหตุผล...",
+                        "success": "ผู้เล่นถูกเตือนแล้ว"
+                    },
+                    "kick_dialog": {
+                        "title": "เตะ",
+                        "description": "เหตุผลที่จะเตะผู้เล่นรายนี้",
+                        "placeholder": "เหตุผล...",
+                        "success": "ผู้เล่นถูกเตะแล้ว"
+                    }
+                },
+                "interaction": {
+                    "title": "ปฏิสัมพันธ์",
+                    "options": {
+                        "heal": "รักษา",
+                        "go_to": "ไปหา",
+                        "bring": "ดึงมา",
+                        "spectate": "รับชม",
+                        "toggle_freeze": "ระงับ"
+                    },
+                    "notifications": {
+                        "heal_player": "รักษาผู้เล่น",
+                        "tp_player": "เทเลพอร์ตไปหาผู้เล่น",
+                        "bring_player": "เรียกผู้เล่นมา",
+                        "spectate_failed": "ล้มเหลวในการไปหาเป้าหมาย ออกจากโหมดรับชม",
+                        "spectate_yourself": "คุณไม่สามารถรับชมตัวเองได้",
+                        "freeze_yourself": "คุณไม่สามารถระงับตัวเองได้"
+                    }
+                },
+                "troll": {
+                    "title": "แผนร้าย",
+                    "options": {
+                        "drunk": "ทำให้เมา",
+                        "fire": "ใส่ไฟ",
+                        "wild_attack": "สัตว์ป่าโจมตี"
+                    }
+                }
+            },
+            "info": {
+                "title": "ข้อมูลผู้เล่น",
+                "session_time": "เวลาเซสชัน",
+                "play_time": "เวลาเล่น",
+                "joined": "เข้าร่วม",
+                "notes_placeholder": "หมายเหตุเกี่ยวกับผู้เล่นรายนี้"
+            },
+            "history": {
+                "title": "ประวัติที่เกี่ยวข้อง",
+                "action_types": {
+                    "warn": "คำเตือน",
+                    "warn_revoked": "เพิกถอนคำเตือนจาก",
+                    "ban": "การแบน",
+                    "ban_revoked": "เพิกถอนการแบนจาก",
+                    "whitelist": "ไวท์ลิสต์",
+                    "whitelist_revoked": "เพิกถอนไวท์ลิสต์จาก"
+                }
+            },
+            "ban": {
+                "title": "แบนผู้เล่น",
+                "reason_placeholder": "เหตุผล",
+                "duration_placeholder": "ระยะเวลา",
+                "hours": "ชั่วโมง",
+                "days": "วัน",
+                "weeks": "สัปดาห์",
+                "months": "เดือน",
+                "permanent": "ถาวร",
+                "custom": "กำหนดเอง",
+                "helper_text": "กรุณาเลือกระยะเวลา",
+                "submit": "ยอมระบการแบน"
+            }
+        }
     }
 }

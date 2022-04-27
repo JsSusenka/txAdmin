@@ -52,7 +52,7 @@ module.exports = class ServerLogger extends LoggerBase {
             intervalBoundary: true,
             initialRotation: true,
             history: 'server.history',
-            // compress: 'gzip', //don't forget to do `mv filename filename.gz`
+            // compress: 'gzip',
             interval: '1d',
             maxFiles: 7,
             maxSize: '10G',
@@ -193,7 +193,8 @@ module.exports = class ServerLogger extends LoggerBase {
         //Process event types (except playerJoining)
         //TODO: normalize/padronize actions
         if (eventData.type === 'playerDropped') {
-            eventMessage = 'disconnected';
+            const reason = eventData.data.reason || 'UNKNOWN REASON';
+            eventMessage = `disconnected (${reason})`;
 
         } else if (eventData.type === 'ChatMessage') {
             const text = (typeof eventData.data.text === 'string') ? eventData.data.text.replace(/\^([0-9])/g, '') : 'unknown message';

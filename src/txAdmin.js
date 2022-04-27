@@ -51,6 +51,7 @@ globals = {
                 bootSeconds: [],
                 freezeSeconds: [],
             },
+            randIDFailures: 0,
             pageViews: {},
             httpCounter: {
                 current: 0,
@@ -71,6 +72,7 @@ globals = {
                     password: 0,
                     zap: 0,
                     nui: 0,
+                    iframe: 0,
                 },
             },
         },

@@ -27,8 +27,7 @@ const ctxUtils = require('./ctxUtils.js');
 module.exports = class WebServer {
     constructor(config) {
         this.config = config;
-        this.intercomToken = nanoid();
-        this.fxWebPipeToken = nanoid();
+        this.luaComToken = nanoid();
         this.webSocket = null;
         this.isListening = false;
 
@@ -149,9 +148,9 @@ module.exports = class WebServer {
                     ctx.body = {error: desc};
                 } else {
                     const desc = `${prefix} Internal Error\n`
-                                 + `Message: ${error.message}\n`
-                                 + `Route: ${reqPath}\n`
-                                 + 'Make sure your txAdmin is updated.';
+                                + `Message: ${error.message}\n`
+                                + `Route: ${reqPath}\n`
+                                + 'Make sure your txAdmin is updated.';
                     logError(desc, methodName);
                     if (GlobalData.verbose) dir(error);
                     ctx.status = 500;
@@ -180,11 +179,10 @@ module.exports = class WebServer {
 
 
     //================================================================
-    //Resetting tokens - called by fxRunner on spawnServer()
-    resetTokens() {
-        this.intercomToken = nanoid();
-        this.fxWebPipeToken = nanoid();
-        if (GlobalData.verbose) log('Intercom and WebPipe tokens reset.');
+    //Resetting lua comms token - called by fxRunner on spawnServer()
+    resetToken() {
+        this.luaComToken = nanoid();
+        if (GlobalData.verbose) log('Resetting luaComToken.');
     }
 
 
@@ -251,7 +249,7 @@ module.exports = class WebServer {
         try {
             setHttpCallback(this.httpCallbackHandler.bind(this, 'citizenfx'));
         } catch (error) {
-            logError('Failed to start CitizenFX Reverse Proxy Callback with error:');
+            logError('Failed to start Cfx.re Reverse Proxy Callback with error:');
             dir(error);
         }
 

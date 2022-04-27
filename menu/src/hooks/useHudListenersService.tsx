@@ -6,10 +6,15 @@ import { useTranslate } from "react-polyglot";
 import { shouldHelpAlertShow } from "../utils/shouldHelpAlertShow";
 import { debugData } from "../utils/debugData";
 import { getNotiDuration } from "../utils/getNotiDuration";
-import { usePlayersState, useSetPlayerFilter, useSetPlayersFilterIsTemp } from "../state/players.state";
+import {
+  usePlayersState,
+  useSetPlayerFilter,
+  useSetPlayersFilterIsTemp,
+} from "../state/players.state";
 import { usePlayerModalContext } from "../provider/PlayerModalProvider";
 import { useSetAssociatedPlayer } from "../state/playerDetails.state";
 import { txAdminMenuPage, useSetPage } from "../state/page.state";
+import { useAnnounceNotiPosValue } from "../state/server.state";
 
 type SnackbarAlertSeverities = "success" | "error" | "warning" | "info";
 
@@ -28,11 +33,16 @@ interface AnnounceMessageProps {
   message: string;
 }
 
+export interface AddAnnounceData {
+  message: string;
+  author: string;
+}
+
 const AnnounceMessage: React.FC<AnnounceMessageProps> = ({
   title,
   message,
 }) => (
-  <Box maxWidth={200}>
+  <Box maxWidth={400} style={{ fontSize: "large" }}>
     <Typography style={{ fontWeight: "bold" }}>{title}</Typography>
     {message}
   </Box>
@@ -59,6 +69,7 @@ export const useHudListenersService = () => {
   const setPlayerFilter = useSetPlayerFilter();
   const setPlayersFilterIsTemp = useSetPlayersFilterIsTemp();
   const setPage = useSetPage();
+  const notiPos = useAnnounceNotiPosValue();
 
   const snackFormat = (m) => (
     <span style={{ whiteSpace: "pre-wrap" }}>{m}</span>
@@ -118,20 +129,19 @@ export const useHudListenersService = () => {
 
   // Handler for dynamically opening the player page & player modal with target
   useNuiEvent<string>("openPlayerModal", (target) => {
-    let targetPlayer
-    const targetId = parseInt(target)
+    let targetPlayer;
+    const targetId = parseInt(target);
 
     if (targetId) {
       targetPlayer = onlinePlayers.find(
         (playerData) => playerData.id === targetId
       );
     } else {
-      const foundPlayers = onlinePlayers.filter(
-        (playerData) => playerData.username.toLowerCase().includes(target.toLowerCase())
+      const foundPlayers = onlinePlayers.filter((playerData) =>
+        playerData.name.toLowerCase().includes(target.toLowerCase())
       );
 
-      if (foundPlayers.length === 1)
-        targetPlayer = foundPlayers[0]
+      if (foundPlayers.length === 1) targetPlayer = foundPlayers[0];
       else if (foundPlayers.length > 1) {
         setPlayerFilter(target);
         setPage(txAdminMenuPage.Players);
@@ -151,18 +161,18 @@ export const useHudListenersService = () => {
     setModalOpen(true);
   });
 
-  useNuiEvent("addAnnounceMessage", ({ message }: { message: string }) => {
+  useNuiEvent<AddAnnounceData>("addAnnounceMessage", ({ message, author }) => {
     enqueueSnackbar(
       <AnnounceMessage
         message={message}
-        title={t("nui_menu.misc.announcement_title")}
+        title={t("nui_menu.misc.announcement_title", { author })}
       />,
       {
-        variant: "info",
+        variant: "warning",
         autoHideDuration: getNotiDuration(message) * 1000,
         anchorOrigin: {
-          horizontal: "right",
-          vertical: "top",
+          horizontal: notiPos.horizontal,
+          vertical: notiPos.vertical,
         },
       }
     );

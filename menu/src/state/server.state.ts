@@ -1,11 +1,15 @@
-import { atom, selector, useRecoilValue } from "recoil";
+import { atom, selector, useRecoilValue, useSetRecoilState } from "recoil";
 import config from "../utils/config.json";
-import { fetchNui } from "../utils/fetchNui";
-import { debugLog } from "../utils/debugLog";
 
 interface OneSyncCtx {
   type: null | string;
   status: boolean;
+}
+
+export interface CustomLocaleData {
+  $meta: Record<string, unknown>;
+  nui_menu: Record<string, unknown>;
+  nui_warning: Record<string, unknown>;
 }
 
 export interface ServerCtx {
@@ -13,29 +17,61 @@ export interface ServerCtx {
   projectName: null | string;
   maxClients: number;
   locale: string;
+  localeData: CustomLocaleData | boolean;
   switchPageKey: string;
+  announceNotiPos: string;
   txAdminVersion: string;
-  endpoint: string;
   alignRight: boolean;
 }
 
 const serverCtx = atom<ServerCtx>({
   key: "serverCtx",
-  default: selector<ServerCtx>({
-    key: "serverCtxFetch",
-    get: async () => {
-      try {
-        const serverCtx = await fetchNui<ServerCtx>("getServerCtx");
-        debugLog("GetServerCtx", serverCtx);
-        return serverCtx;
-      } catch (e) {
-        // This will error whenever the menu is disabled, so lets just silently
-        // deal with it for now.
-        // console.error(e)
-        return <ServerCtx>config.serverCtx;
-      }
-    },
-  }),
+  default: config.serverCtx,
 });
 
 export const useServerCtxValue = () => useRecoilValue(serverCtx);
+
+export const useSetServerCtx = () => useSetRecoilState(serverCtx);
+
+interface AnnounceNotiLocation {
+  vertical: "top" | "bottom";
+  horizontal: "left" | "right" | "center";
+}
+
+const verifyNotiLocation = (vertical, horizontal) => {
+  if (vertical !== "top" && vertical !== "bottom") {
+    throw new Error(
+      `Notification vertical position must be "top" or "bottom", but got ${vertical}`
+    );
+  }
+
+  if (
+    horizontal !== "left" &&
+    horizontal !== "right" &&
+    horizontal !== "center"
+  ) {
+    throw new Error(
+      `Notification horizontal position must be "left", "right" or "center", but got ${horizontal}`
+    );
+  }
+
+  return { vertical, horizontal };
+};
+
+const notiLocationSelector = selector<AnnounceNotiLocation>({
+  key: "notiLocation",
+  get: ({ get }) => {
+    const notiTgtRaw = get(serverCtx).announceNotiPos;
+    const [vertical, horizontal] = notiTgtRaw.split("-");
+
+    try {
+      return verifyNotiLocation(vertical, horizontal);
+    } catch (e) {
+      console.error(e);
+      return { vertical: "top", horizontal: "center" };
+    }
+  },
+});
+
+export const useAnnounceNotiPosValue = () =>
+  useRecoilValue(notiLocationSelector);

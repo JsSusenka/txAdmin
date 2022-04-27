@@ -1,7 +1,7 @@
 //Requires
 const fs = require('fs');
 const path = require('path');
-const xss = require('./xss')();
+let xss; //can't be required before the dependency check
 //const log = (x) => process.stdout.write(JSON.stringify(x, null, 2) + '\n');
 
 
@@ -9,17 +9,21 @@ const xss = require('./xss')();
 /**
  * txAdmin in ASCII
  */
+let __ascii;
 function txAdminASCII() {
     //NOTE: precalculating the ascii art for efficiency
     // const figlet = require('figlet');
     // let ascii = figlet.textSync('txAdmin');
     // let b64 = Buffer.from(ascii).toString('base64');
     // console.log(b64);
-    const preCalculated = `ICBfICAgICAgICAgICAgXyAgICAgICBfICAgICAgICAgICBfICAgICAgIAogfCB8X19fICBfX
+    if (!__ascii) {
+        const preCalculated = `ICBfICAgICAgICAgICAgXyAgICAgICBfICAgICAgICAgICBfICAgICAgIAogfCB8X19fICBfX
     yAgIC8gXCAgIF9ffCB8XyBfXyBfX18gKF8pXyBfXyAgCiB8IF9fXCBcLyAvICAvIF8gXCAvIF9gIHwgJ18gYCBfIFx8IHwg
     J18gXCAKIHwgfF8gPiAgPCAgLyBfX18gXCAoX3wgfCB8IHwgfCB8IHwgfCB8IHwgfAogIFxfXy9fL1xfXC9fLyAgIFxfXF9
     fLF98X3wgfF98IHxffF98X3wgfF98CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=`;
-    return Buffer.from(preCalculated, 'base64').toString('ascii');
+        __ascii = Buffer.from(preCalculated, 'base64').toString('ascii');
+    }
+    return __ascii;
 }
 
 
@@ -138,11 +142,16 @@ function resolveCFGFilePath(cfgPath, serverDataPath) {
  *  - endpoints that are not 0.0.0.0:xxx
  *  - port mismatch
  *  - "stop/start/ensure/restart txAdmin/monitor"
+ *  - if endpoint on txAdmin port
  *  - if endpoint on 40120~40130
  *  - zap-hosting iface and port enforcement
+ *
+ * NOTE: stopping monitor on external cfg files will result in the !300 issue
  * @param {string} rawCfgFile
  */
 function getFXServerPort(rawCfgFile) {
+    if (!xss) xss = require('./xss')();
+
     const endpointsRegex = /^\s*endpoint_add_(\w+)\s+["']?([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,5})["']?.*$/gim;
     const maxClientsRegex = /^\s*sv_maxclients\s+(\d+).*$/gim;
     const txResCommandsRegex = /^\s*(start|stop|ensure|restart)\s+(monitor|txadmin).*$/gim;
@@ -199,26 +208,30 @@ function getFXServerPort(rawCfgFile) {
         if (m.port !== firstPort) throw new Error('All <code>endpoint_add_*</code> MUST have the same port');
     });
 
-    if (firstPort >= 40120 && firstPort <= 40130) {
+    //Check if the port is valid
+    if (firstPort >= 40120 && firstPort <= 40150) {
         throw new Error(`The port ${firstPort} is dedicated for txAdmin and can not be used for FXServer, please edit your <code>endpoint_add_*</code>`);
+    }
+    if (firstPort === GlobalData.txAdminPort) {
+        throw new Error(`The port ${firstPort} is being used by txAdmin and can not be used for FXServer at the same time, please edit your <code>endpoint_add_*</code>`);
     }
 
     //IF ZAP-hosting interface bind enforcement
     if (GlobalData.forceInterface) {
         const stdMessage = [
             'Remove all lines containing <code>endpoint_add</code> and add the lines below to the top of your file.',
-            `<code>endpoint_add_tcp "${GlobalData.forceInterface}:${GlobalData.forceFXServerPort}"`,
-            `endpoint_add_udp "${GlobalData.forceInterface}:${GlobalData.forceFXServerPort}"</code>`,
+            `<code>endpoint_add_tcp "${GlobalData.forceInterface}:${GlobalData.forceFXServerPort || 30120}"`,
+            `endpoint_add_udp "${GlobalData.forceInterface}:${GlobalData.forceFXServerPort || 30120}"</code>`,
         ].join('\n<br>');
 
         //Check if all ports are the ones being forced
-        if (firstPort !== GlobalData.forceFXServerPort) {
-            throw new Error(`ZAP-Hosting: invalid port found.<br>\n ${stdMessage}`);
+        if (GlobalData.forceFXServerPort && firstPort !== GlobalData.forceFXServerPort) {
+            throw new Error(`invalid port found.<br>\n ${stdMessage}`);
         }
 
         //Check if all interfaces are the ones being forced
         const invalidInterface = endpoints.find((match) => match.iface !== GlobalData.forceInterface);
-        if (invalidInterface) throw new Error(`ZAP-Hosting: invalid interface '${invalidInterface.iface}'.<br>\n${stdMessage}`);
+        if (invalidInterface) throw new Error(`invalid interface '${invalidInterface.iface}'.<br>\n${stdMessage}`);
     } else {
         const validTCPEndpoint = endpoints.find((match) => {
             return (match.type === 'tcp' && (match.iface === '0.0.0.0' || match.iface === '127.0.0.1'));
@@ -250,7 +263,7 @@ function findLikelyCFGPath(serverDataPath) {
         try {
             getCFGFileData(cfgPath);
             return cfgPath;
-        } catch (error) {}
+        } catch (error) { }
     }
     return false;
 }
