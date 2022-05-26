@@ -197,15 +197,15 @@ if (fs.existsSync(zapCfgFile)) {
         forceInterface = txAdminInterfaceConvar;
     }
 }
-if (verbose) dir({isZapHosting, forceInterface, forceFXServerPort, txAdminPort, loginPageLogo, runtimeSecret, deployerDefaults});
+if (verbose) dir({ isZapHosting, forceInterface, forceFXServerPort, txAdminPort, loginPageLogo, runtimeSecret, deployerDefaults });
 
 
 //Check if this version of txAdmin is too outdated to be considered safe to use in prod
 //NOTE: Only valid if its being very actively maintained.
 //          Use 30d for patch 0, or 45~60d otherwise
 //      Objective is to update every 2~3 weeks, always on monday ~15:00
-const txVerBBLastUpdate = 1650299999;
-const txVerBBDelta = 23 + ((isZapHosting) ? 10 : 0);
+const txVerBBLastUpdate = 1652292073;
+const txVerBBDelta = 21 + ((isZapHosting) ? 10 : 0);
 const txAdminVersionBestBy = txVerBBLastUpdate + (txVerBBDelta * 86400);
 // dir({
 //     updateDelta: txVerBBDelta,
@@ -263,7 +263,7 @@ GlobalData = {
     loopbackInterfaces,
 
     //Consts
-    validIdentifiers:{
+    validIdentifiers: {
         steam: /^steam:1100001[0-9A-Fa-f]{8}$/,
         license: /^license:[0-9A-Fa-f]{40}$/,
         xbl: /^xbl:\d{14,20}$/,
@@ -311,9 +311,9 @@ setTimeout(() => {
 }, 10000);
 
 //Handle any stdio error
-process.stdin.on('error', (data) => {});
-process.stdout.on('error', (data) => {});
-process.stderr.on('error', (data) => {});
+process.stdin.on('error', (data) => { });
+process.stdout.on('error', (data) => { });
+process.stderr.on('error', (data) => { });
 
 //Handle "the unexpected"
 process.on('unhandledRejection', (err) => {
@@ -321,7 +321,7 @@ process.on('unhandledRejection', (err) => {
     logError(err.message);
     dir(err.stack);
 });
-process.on('uncaughtException', function(err) {
+process.on('uncaughtException', function (err) {
     logError('Ohh nooooo - uncaughtException');
     logError(err.message);
     dir(err.stack);
