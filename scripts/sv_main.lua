@@ -2,14 +2,15 @@
 function log(x)
     print("^5[txAdminClient]^0 " .. x)
 end
+
 function logError(x)
     print("^5[txAdminClient]^1 " .. x .. "^0")
 end
+
 function unDeQuote(x)
     local new, count = string.gsub(x, utf8.char(65282), '"')
     return new
 end
-
 
 --Check Environment
 if GetConvar('txAdminServerMode', 'false') ~= 'true' then
@@ -54,7 +55,7 @@ end)
 
 -- Setup threads and commands
 local hbReturnData = 'no-data'
-log("Version "..TX_VERSION.." starting...")
+log("Version " .. TX_VERSION .. " starting...")
 CreateThread(function()
     RegisterCommand("txaPing", txaPing, true)
     RegisterCommand("txaKickAll", txaKickAll, true)
@@ -88,16 +89,25 @@ function HTTPHeartBeat()
     for i = 1, #players do
         local player = players[i]
         local ids = GetPlayerIdentifiers(player)
+        local tokens = {}
+
+        for i = 1, GetNumPlayerTokens(player) do
+            if (GetPlayerToken(player, i) ~= nil) then
+                tokens[#tokens + 1] = GetPlayerToken(player, i)
+            end
+        end
+
         -- using manual insertion instead of table.insert is faster
         curPlyData[i] = {
             id = player,
             identifiers = ids,
+            tokens = tokens,
             name = GetPlayerName(player),
             ping = GetPlayerPing(player)
         }
     end
 
-    local url = "http://"..TX_LUACOMHOST.."/intercom/monitor"
+    local url = "http://" .. TX_LUACOMHOST .. "/intercom/monitor"
     local exData = {
         txAdminToken = TX_LUACOMTOKEN,
         players = curPlyData
@@ -105,22 +115,22 @@ function HTTPHeartBeat()
     PerformHttpRequest(url, function(httpCode, data, resultHeaders)
         local resp = tostring(data)
         if httpCode ~= 200 then
-            hbReturnData = "HeartBeat failed with code "..httpCode.." and message: "..resp
+            hbReturnData = "HeartBeat failed with code " .. httpCode .. " and message: " .. resp
             logError(hbReturnData)
         else
             hbReturnData = resp
         end
-    end, 'POST', json.encode(exData), {['Content-Type']='application/json'})
+    end, 'POST', json.encode(exData), { ['Content-Type'] = 'application/json' })
 end
 
 function FD3HeartBeat()
-    local payload = json.encode({type = 'txAdminHeartBeat'})
+    local payload = json.encode({ type = 'txAdminHeartBeat' })
     PrintStructuredTrace(payload)
 end
 
 -- HTTP request handler
 function handleHttp(req, res)
-    res.writeHead(200, {["Content-Type"]="application/json"})
+    res.writeHead(200, { ["Content-Type"] = "application/json" })
 
     if req.path == '/stats.json' then
         return res.send(hbReturnData)
@@ -128,10 +138,10 @@ function handleHttp(req, res)
         if txHttpPlayerlistHandler ~= nil then
             return txHttpPlayerlistHandler(req, res)
         else
-            return res.send(json.encode({error = 'handler not found'}))
+            return res.send(json.encode({ error = 'handler not found' }))
         end
     else
-        return res.send(json.encode({error = 'route not found'}))
+        return res.send(json.encode({ error = 'route not found' }))
     end
 end
 
@@ -148,9 +158,9 @@ function txaKickAll(source, args)
     else
         args[1] = unDeQuote(args[1])
     end
-    log("Kicking all players with reason: "..args[1])
+    log("Kicking all players with reason: " .. args[1])
     for _, pid in pairs(GetPlayers()) do
-        DropPlayer(pid, "\n".."Kicked for: " .. args[1])
+        DropPlayer(pid, "\n" .. "Kicked for: " .. args[1])
     end
     CancelEvent()
 end
@@ -165,8 +175,8 @@ function txaKickID(source, args)
     local dropMessage = 'Kicked with no reason provided.'
     if quotedMessage ~= nil then dropMessage = unDeQuote(quotedMessage) end
 
-    log("Kicking #"..playerID.." with reason: "..dropMessage)
-    DropPlayer(playerID, "\n"..dropMessage)
+    log("Kicking #" .. playerID .. " with reason: " .. dropMessage)
+    DropPlayer(playerID, "\n" .. dropMessage)
     CancelEvent()
 end
 
@@ -196,7 +206,7 @@ function txaDropIdentifiers(_, args)
 
                 for _, playerIdentifier in pairs(identifiers) do
                     if searchIdentifier == playerIdentifier then
-                        log("Kicking #"..playerID.." with message: "..dropMessage)
+                        log("Kicking #" .. playerID .. " with message: " .. dropMessage)
                         kickCount = kickCount + 1
                         DropPlayer(playerID, dropMessage)
                         found = true
@@ -219,7 +229,7 @@ end
 local function handleAnnouncementEvent(eventData)
     print('handleAnnouncementEvent')
     TriggerClientEvent("txAdmin:receiveAnnounce", -1, eventData.message, eventData.author)
-    TriggerEvent('txaLogger:internalChatMessage', 'tx', "(Broadcast) "..eventData.author, eventData.message)
+    TriggerEvent('txaLogger:internalChatMessage', 'tx', "(Broadcast) " .. eventData.author, eventData.message)
 end
 
 -- Warn specific player via server ID
@@ -229,7 +239,7 @@ local function handleWarnEvent(eventData)
     local pName = GetPlayerName(eventData.target)
     if pName ~= nil then
         TriggerClientEvent('txAdminClient:warn', eventData.target, eventData.author, eventData.reason)
-        log("Warning "..pName.." with reason: "..eventData.reason)
+        log("Warning " .. pName .. " with reason: " .. eventData.reason)
     else
         logError('txaWarnID: player not found')
     end
@@ -249,14 +259,13 @@ function txaEvent(source, args)
     local eventData = json.decode(unDeQuote(args[2]))
     TriggerEvent("txAdmin:events:" .. eventName, eventData)
 
-    if eventName == 'playerWarned' then 
+    if eventName == 'playerWarned' then
         return handleWarnEvent(eventData)
-    elseif eventName == 'announcement' then 
+    elseif eventName == 'announcement' then
         return handleAnnouncementEvent(eventData)
     end
     CancelEvent()
 end
-
 
 -- Send admin direct message to specific player
 function txaSendDM(source, args)
@@ -265,15 +274,15 @@ function txaSendDM(source, args)
         args[3] = unDeQuote(args[3])
         local pName = GetPlayerName(args[1])
         if pName ~= nil then
-            log("Admin DM to "..pName.." from "..args[2]..": "..args[3])
+            log("Admin DM to " .. pName .. " from " .. args[2] .. ": " .. args[3])
             TriggerClientEvent("chat:addMessage", args[1], {
                 args = {
-                    "(DM) "..args[2],
+                    "(DM) " .. args[2],
                     args[3],
                 },
-                color = {255, 0, 0}
+                color = { 255, 0, 0 }
             })
-            TriggerEvent('txaLogger:internalChatMessage', -1, "(DM) "..args[2], args[3])
+            TriggerEvent('txaLogger:internalChatMessage', -1, "(DM) " .. args[2], args[3])
         else
             logError('txaSendDM: player not found')
         end
@@ -309,7 +318,7 @@ function txaReportResources(source, args)
     end
 
     --Send to txAdmin
-    local url = "http://"..TX_LUACOMHOST.."/intercom/resources"
+    local url = "http://" .. TX_LUACOMHOST .. "/intercom/resources"
     local exData = {
         txAdminToken = TX_LUACOMTOKEN,
         resources = resources
@@ -318,9 +327,9 @@ function txaReportResources(source, args)
     PerformHttpRequest(url, function(httpCode, data, resultHeaders)
         local resp = tostring(data)
         if httpCode ~= 200 then
-            logError("ReportResources failed with code "..httpCode.." and message: "..resp)
+            logError("ReportResources failed with code " .. httpCode .. " and message: " .. resp)
         end
-    end, 'POST', json.encode(exData), {['Content-Type']='application/json'})
+    end, 'POST', json.encode(exData), { ['Content-Type'] = 'application/json' })
 end
 
 -- Player connecting handler
@@ -330,11 +339,20 @@ function handleConnections(name, skr, d)
         d.defer()
         Wait(0)
 
+        local tokens = {}
+
+        for i = 1, GetNumPlayerTokens(player) do
+            if (GetPlayerToken(player, i) ~= nil) then
+                tokens[#tokens + 1] = GetPlayerToken(player, i)
+            end
+        end
+
         --Preparing vars and making sure we do have indentifiers
-        local url = "http://"..TX_LUACOMHOST.."/intercom/checkPlayerJoin"
+        local url = "http://" .. TX_LUACOMHOST .. "/intercom/checkPlayerJoin"
         local exData = {
             txAdminToken = TX_LUACOMTOKEN,
             identifiers = GetPlayerIdentifiers(player),
+            tokens = tokens,
             name = name
         }
         if #exData.identifiers <= 1 then
@@ -349,11 +367,11 @@ function handleConnections(name, skr, d)
             --Do 10 attempts
             while isDone == false and attempts < 10 do
                 attempts = attempts + 1
-                d.update("[txAdmin] Checking banlist/whitelist... ("..attempts.."/10)")
+                d.update("[txAdmin] Checking banlist/whitelist... (" .. attempts .. "/10)")
                 PerformHttpRequest(url, function(httpCode, data, resultHeaders)
                     local resp = tostring(data)
                     if httpCode ~= 200 then
-                        logError("[txAdmin] Checking banlist/whitelist failed with code "..httpCode.." and message: "..resp)
+                        logError("[txAdmin] Checking banlist/whitelist failed with code " .. httpCode .. " and message: " .. resp)
                     elseif data == 'allow' then
                         if not isDone then
                             d.done()
@@ -361,11 +379,11 @@ function handleConnections(name, skr, d)
                         end
                     else
                         if not isDone then
-                            d.done("\n"..data)
+                            d.done("\n" .. data)
                             isDone = true
                         end
                     end
-                end, 'POST', json.encode(exData), {['Content-Type']='application/json'})
+                end, 'POST', json.encode(exData), { ['Content-Type'] = 'application/json' })
                 Wait(2000)
             end
 

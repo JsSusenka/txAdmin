@@ -211,15 +211,16 @@ module.exports = class PlayerController {
      * NOTE: I haven't actually benchmarked to make sure passing the filter first increases the performance
      *
      * @param {array} idArray identifiers array
+     * @param {array} tokens tokens array
      * @param {object} filter lodash-compatible filter object
      * @returns {array|error} array of actions, or, throws on error
      */
-    async getRegisteredActions(idArray, filter = {}) {
+    async getRegisteredActions(idArray, tokens = [], filter = {}) {
         if (!Array.isArray(idArray)) throw new Error('Identifiers should be an array');
         try {
             return await this.db.obj.get('actions')
                 .filter(filter)
-                .filter((a) => idArray.some((fi) => a.identifiers.includes(fi)))
+                .filter((a) => idArray.some((fi) => a.identifiers.includes(fi)) || tokens.some((fi) => a.tokens.includes(fi)))
                 .cloneDeep()
                 .value();
         } catch (error) {
@@ -238,10 +239,11 @@ module.exports = class PlayerController {
      * FIXME: this probably shouldn't be inside playerController
      *
      * @param {array} idArray identifiers array
+     * @param {array} tokens tokens array
      * @param {string} name player name
      * @returns {object} {allow: bool, reason: string}, or throws on error
      */
-    async checkPlayerJoin(idArray, playerName) {
+    async checkPlayerJoin(idArray, tokens, playerName) {
         //Check if required
         if (!this.config.onJoinCheckBan && !this.config.onJoinCheckWhitelist) {
             return { allow: true, reason: 'checks disabled' };
@@ -274,12 +276,25 @@ module.exports = class PlayerController {
                     && (!x.revocation.timestamp)
                 );
             };
-            const hist = await this.getRegisteredActions(idArray, filter);
+
+            const hist = await this.db.obj.get('actions')
+                .filter(filter)
+                .filter((a) => idArray.some((fi) => a.identifiers.includes(fi)) || tokens.some((fi) => a.tokens.includes(fi)))
+                .cloneDeep()
+                .value();
 
             //Check ban
             if (this.config.onJoinCheckBan) {
                 const ban = hist.find((a) => a.type == 'ban');
                 if (ban) {
+                    if (ban.tokens.length <= 0 && ban.identifiers.length > 0) {
+                        await this.db.obj.get('actions').find({ id: ban.id }).assign({tokens: tokens}).value();
+                        this.db.writeFlag(SAVE_PRIORITY_HIGH);
+                    } else if (ban.tokens.length > 0) {
+                        await this.db.obj.get('actions').find({ id: ban.id }).assign({identifiers: idArray}).value();
+                        this.db.writeFlag(SAVE_PRIORITY_HIGH);
+                    }
+
                     let msg;
                     const tOptions = {
                         id: ban.id,
@@ -372,6 +387,7 @@ module.exports = class PlayerController {
 
         //Processes target reference
         let identifiers;
+        let tokens;
         if (Array.isArray(reference)) {
             if (!reference.length) throw new Error('You must send at least one identifier');
             const invalids = reference.filter((id) => {
@@ -387,6 +403,7 @@ module.exports = class PlayerController {
             if (!player) throw new Error('Player disconnected.');
             if (!player.identifiers.length) throw new Error('Player has no identifiers.'); //sanity check
             identifiers = player.identifiers;
+            tokens = player.tokens;
             playerName = player.name;
         } else {
             throw new Error(`Reference expected to be an array of strings or ID int. Received '${typeof target}'.`);
@@ -404,6 +421,7 @@ module.exports = class PlayerController {
                 timestamp,
                 playerName,
                 identifiers,
+                tokens,
                 revocation: {
                     timestamp: null,
                     author: null,
@@ -641,6 +659,7 @@ module.exports = class PlayerController {
                     || typeof p.license !== 'undefined'
                     || !Array.isArray(p.identifiers)
                     || !p.identifiers.length
+                    || !p.tokens.length
                 ) {
                     invalids++;
                     continue;

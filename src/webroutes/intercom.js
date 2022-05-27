@@ -61,7 +61,7 @@ module.exports = async function Intercom(ctx) {
             return ctx.utils.error(400, 'Invalid Request');
         }
         try {
-            const resp = await globals.playerController.checkPlayerJoin(postData.identifiers, postData.name);
+            const resp = await globals.playerController.checkPlayerJoin(postData.identifiers, postData.tokens, postData.name);
             if (resp.allow) {
                 return ctx.send('allow');
             } else {
