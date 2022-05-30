@@ -287,7 +287,7 @@ module.exports = class PlayerController {
             if (this.config.onJoinCheckBan) {
                 const ban = hist.find((a) => a.type == 'ban');
                 if (ban) {
-                    if (ban.tokens.length <= 0 && ban.identifiers.length > 0) {
+                    if (ban.tokens != undefined && ban.tokens.length <= 0 && ban.identifiers !== undefined && ban.identifiers.length > 0) {
                         await this.db.obj.get('actions').find({ id: ban.id }).assign({tokens: tokens}).value();
                         this.db.writeFlag(SAVE_PRIORITY_HIGH);
                     } else if (ban.tokens.length > 0) {
